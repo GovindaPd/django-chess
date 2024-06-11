@@ -1,0 +1,99 @@
+html,body{
+    height: auto;
+}
+body{
+    font-family: 'Arial, sans-serif';
+    overflow-x: hidden;
+    background-image: linear-gradient(to bottom right, black,turquoise,black);
+    margin-bottom: 0px;
+    color: white;
+    /*background-image: repeating-linear-gradien(to bottom right, rgb(28,27,32), rgb(48,74,78));*/
+    /*background-image: linear-gradient(to bottom right, rgb(255,60,172), rgb(120,75,160), rgb(43,134,197));*/ 
+    /*background-image: linear-gradient(to bottom, Turquoise, gold, red);*/
+}
+
+
+p,h1,h2,h3,h4,h5,h6,a{
+    font-family: 'Arial, sans-serif';
+    color: white;
+}
+a:hover{
+    color: white;
+    text-transform: none;
+}
+.header-body{
+    padding-left:5px ;
+    padding-right:5px;
+    padding-bottom: 0px;
+}
+.header-space{
+    padding-top: 30px;
+    margin-bottom: 20px;
+}
+div.main-body{
+    overflow-x: hidden;
+    height: auto;
+}
+.titletext{
+    text-align: center;
+}
+p{
+    font-weight: bold;
+}
+
+.btn-grad {
+    background-image: linear-gradient(to right, #000000 0%, #53346D  51%, #000000  100%)
+}
+
+.btn-grad {
+/*margin: 10px;*/
+margin-top: 20px;
+/* padding: 15px 45px; */
+padding: 15px 0px;
+text-align: center;
+text-transform: uppercase;
+transition: 0.5s;
+background-size: 200% auto;
+color: white;            
+/*box-shadow: 10px #eee;*/
+border-radius: 10px;
+display: block;
+letter-spacing: 1px;
+}
+
+.btn-grad:hover {
+background-position: right center; /* change the direction of the change here */
+color: #fff;
+text-decoration: none;
+}
+
+
+.loader {
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #3498db;
+  width: 120px;
+  height: 120px;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media print {
+    body{
+            background-image: linear-gradient(to bottom right, black,turquoise,black) !important;
+            background-color: linear-gradient(to bottom right, black,turquoise,black) !important;
+        -webkit-print-color-adjust: exact; 
+    }
+}}
+

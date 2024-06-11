@@ -1,0 +1,120 @@
+{% extends 'chesswithfriends/layout.html' %}
+
+
+{% block body %}
+
+		<div class="container-fluied instruction-box" style="overflow-x: hidden; margin-top: 50px; margin-bottom:50px;">
+			<div class="row">
+				<div class="col-sm-3"></div>
+				<div class="col-sm-6 shadow " style="border-radius: 10px; padding-top: 25px; padding-bottom: 25px;">
+					
+					<center>
+					<div class="form-group" style="width: 50%;">
+						<button class="btn btn-grad btn-block" id="token_form" onclick="token_form()">Enter Token</button>
+					</div>
+					<div class="form-group" style="width: 50%;">
+						<button class="btn btn-grad btn-block" id="withcomputer_form" onclick="withcomputer_form()">With Computer</button>
+					</div>
+					<div class="form-group" style="width: 50%;">
+						<button class="btn btn-grad btn-block" id="onlinewithfriend_form" onclick="onlinewithfriend_form()">With Friend</button>
+					</div>
+					</center>
+					
+					<div class="row d-flex justify-content-center" style="margin-top: 50px;">
+						<form  method="POST" action="{% url 'startgame' %}" id="selection_form">
+							{% csrf_token %}
+							<!-- <input type="hidden" name="gen_token" value="{{token}}"> -->
+							<div class="form-inline row justify-content-center" id="token_field" style="display: none;">
+								<div class="form-group">
+									<input class="form-control-lg" type="text" name="token" id="token" placeholder="Enter your token here" maxlength="8">
+								</div>
+							</div>
+
+							<div class="form-inline row justify-content-center" id="color_field" style="display: none;">
+								<center><h5 >Select color:</h5></center>
+								<div class="form-group justify-content-center">
+									<input class="form-control-lg" type="radio" name="color" value="W" id="white" checked > White &nbsp;
+									<input class="form-control-lg" type="radio" name="color" value="B" id="black"> Black
+								</div>
+								
+							</div>
+
+							<div class="form-inline row justify-content-center" id="level_field" style="display: none;">
+								<center><h5 >Select level:</h5></center>
+								<div class="form-group justify-content-center">
+									<input class="form-control-lg" type="radio" name="level" value="normal" checked> Normal &nbsp;
+									<input class="form-control-lg" type="radio" name="level" value="hard"> Hard
+								</div>
+							</div>
+
+							<div class="form-inline row justify-content-center" id="timer_field" style="display: none;">
+								<center><h5 >Select time interval:</h5></center>
+								<div class="form-group" style="text-align: center;">
+									<input type="range" name="timeinterval" class="form-control-range" min=1 max=5 step=1 value=2 onInput="$('#rangeval').html($(this).val()+' Minute')">
+								</div>
+								<center><span class="" id="rangeval" >2 Minute</span></center>
+							</div>
+							
+							<div class="form-inline row justify-content-center" id="type_field" style="display: none;">
+								<div class="form-group">
+									<input type="hidden" name="type" id="type" class="form-control-range" value="withcomputer">
+								</div>
+							</div>
+
+							<div class="form-inline row justify-content-center" id="btn_field" style="display: none;">
+								<div class="form-group ">
+									<input type="submit" name="gameform" class="btn btn-grad btn-block" value="Start Game">
+								</div>
+							</div>
+						</form>
+					</div>
+					
+					<br><hr style="border: 3px solid white;">
+					<div style="padding-left: 10px; padding-right: 10px; text-align: center;">
+						<h3 id="gameover" style="color: black; text-align:center; display: none;"></h3>						
+						
+						<h4>Instruction To Read Before Start!!!</h4><p>On click Start Game the game will begin. Each Player will 2 minute(120 seconds) time to think and move if you did not moved in given time then trun will change to other player and him also get 2 minute time to think and move. This process will continue until the gaeme is over or one player win.<br> If you want to start new game then click on Restart button.</p><h4>Chess Instruction!!!</h4><p>If your Pawn reach to opponent teritory then he will promote himself into Queen.<br>Pawn walk only staright one step and kill diagnol in (forward left and forward right)direction one step.<br>King move in all directon(360) but only one step.<br>Rook can move as many steps only in directon(Left,Right,Forward,Backward).<br>Bishop can move as many steps in diagnoal direction(left forward,right forward left backward,right backward) until no is in the way of him.<br>Knight can move 2 steps in same direction and 1 step in left or right in all direction bot not diagnoal.<br> Queen can move both rook and bishop moves.</p>
+				    	
+					</div>
+				  <!-- </div> -->
+				</div>
+				<div class="col-sm-3"></div>	
+			</div>
+		</div>
+
+
+<script type="text/javascript">
+
+	function token_form(){
+		$('#token_field').css('display', 'block');
+		$('#color_field').css('display', 'none');
+		$('#level_field').css('display', 'none');
+		$('#timer_field').css('display', 'none');
+		$('#btn_field').css('display', 'block');
+		$('#type').val('token_submit')
+		$('#token')[0].required = true
+	}
+
+	function onlinewithfriend_form(){
+		$('#token_field').css('display', 'none');
+		$('#color_field').css('display', 'block');
+		$('#level_field').css('display', 'none');
+		$('#timer_field').css('display', 'block');
+		$('#btn_field').css('display', 'block');
+		$('#type').val('onlinewithfriend')
+		$('#token')[0].required = false
+	}
+
+	function withcomputer_form(){
+		$('#token_field').css('display', 'none');
+		$('#color_field').css('display', 'block');
+		$('#level_field').css('display', 'block');
+		$('#timer_field').css('display', 'none');
+		$('#btn_field').css('display', 'block');
+		$('#type').val('withcomputer')
+		$('#token')[0].required = false
+	}
+
+</script>
+
+{% endblock %}

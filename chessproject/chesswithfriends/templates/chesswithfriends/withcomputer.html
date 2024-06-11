@@ -1,0 +1,264 @@
+{% extends 'chesswithfriends/layout.html' %}
+
+{% block body %}
+		<div class="container-fluied chess-box" style="margin-top:50px; margin-bottom:50px;">
+		  <div class="row">
+			<div class="col-sm-3"></div>
+			<div class="col-sm-6  shadow resp-border" style="border-radius: 10px; ">
+				{{ token|json_script:'group-name' }}
+
+				<!-- turn show box -->
+				<div class="" style="min-height: 30px; height: 30px; width: 100%; clear: both; border: 0px solid blue;">
+					<p style="font-size: 20px; color: whitesmoke; text-align:center;" id="turn_show">{{ chessman_color|get_item:turn }} turn</p>
+				</div>
+
+				<!-- dead list box -->
+				<div class='' style="min-height: 30px; height: 30px; text-align: center; border: 0px solid red;">
+				  <p id='my_dead_chessmans' style="font-size: 20px; color:black;">
+					{% if dead_list|length > 0 %}
+					  {% for i in dead_list %}
+						{% if i|slice:"0" == color %}
+						  {% with piece=i|slice:"0:2"  %}
+						    {{ chessman_names|get_item:piece }}
+						  {% endwith %}
+						
+						{% endif %}
+					  {% endfor %}
+					{% endif %}
+				  </p>
+				</div>
+				<!-- end dead list box -->
+
+				<!-- chessboard -->
+				<div class="row d-flex justify-content-center" id="chess_board_div">
+					<!-- gameover msg -->
+					<h4 id="gameover" style="display:none; color: blue; top: 40%; position:absolute; text-align:center; font-family: fantasy; text-shadow: 0px 0px 0px black;"></h4>
+
+					<table>
+						{% for i in color|custome_range %}
+						<tr>
+						{% for j in color|custome_range %}
+						{% with key=i|int_to_str_add:j %}
+
+						{% if i|add:j|divisibleby:2 == 0 %}
+						<td id="{{ key }}" style="background-color: chocolate; font-size: 30px; color: black;" onclick="move(this)">
+						{% else %}
+						<td id="{{ key }}" style="background-color: lightgoldenrodyellow; font-size: 30px; color: black;" onclick="move(this)">
+						{% endif %}
+						
+						{% if chessboard|get_item:key != '' %}
+						  {% with chessman_key_name=chessboard|get_item:key %}
+						  {% with piece=chessman_key_name|slice:"0:2"  %}
+						    <span>{{ chessman_names|get_item:piece }}</span>
+						  {% endwith %}
+						  {% endwith %}
+						{% else %}
+							<span></span>
+						{% endif %}
+						</td>
+
+						{% endwith %}
+						{% endfor %}
+						</tr>
+						{% endfor %}
+					</table>
+				</div>
+				<!-- end chessboard -->
+				
+				<!-- dead list box -->
+				<div class='' style="min-height: 30px; height: 30px; text-align: center; border: 0px solid red;">
+				  <p id='opp_dead_chessmans' style="font-size: 20px; color:black;">
+					{% if dead_list|length > 0 %}
+					  {% for i in dead_list %}
+						{% if i|slice:"0" != color %}
+						  {% with piece=i|slice:"0:2"  %}
+						    {{ chessman_names|get_item:piece }}
+						  {% endwith %}
+						{% endif %}
+					  {% endfor %}
+					{% endif %}
+				  </p>
+				</div>
+				<!-- end dead list box -->
+
+
+				<!-- game options -->
+				<div class='row d-flex justify-content-center' >
+					<div class="col-sm-4" style="margin:0px 10px">
+						<div class="form-group ">
+							<a href="{% url 'index' %}" class="btn btn-grad btn-block">HOME PAGE</a>
+						</div>
+					</div>
+				</div>
+				<!-- end game options -->
+				
+			</div>
+			<div class="col-sm-3"></div><br>
+		  </div>
+		</div>
+
+
+<script type="text/javascript">
+
+	let turn = "{{ turn }}"
+	const color = "{{ color }}"
+	const chessman_names = {{ chessman_names|js }}
+	let chessboard = {{ chessboard|js }}
+	let castle = {{ castle|js }}
+	let dead_list = {{ dead_list|js }}
+
+	let previous_position = null
+	let gameover = false
+	
+	let kp = null
+	let htt = []	//here_to_there	
+	let legal_moves = {}
+	let possible_moves = []
+    
+	const teamname = JSON.parse(document.getElementById('group-name').textContent)
+	const url = `ws://${window.location.host}/computer/`+ teamname+ '/'
+	const chatSocket = new WebSocket(url)
+
+
+    chatSocket.onmessage = function(e){
+        let data = JSON.parse(e.data)
+        if (data.type == 'game_join'){ 
+        	//console.log(data)
+	    }
+        else if(data.type == 'get_moves'){
+			legal_moves = data.legal_moves
+			//now make new marks
+			for(let i of legal_moves[chessboard[previous_position]]){
+				$('#'+i).css('border','2px solid blue')
+			}
+			possible_moves = legal_moves[chessboard[previous_position]]
+		}
+
+    	// on chess move
+		else if(data.type == 'make_moves'){
+			chessboard = data.context.chessboard
+			castle = data.context.castle
+			dead_list = data.context.dead_list
+			legal_moves = data.context.legal_moves
+			
+			// make move on board
+			for (let i of Object.keys(chessboard)){
+				if (chessboard[i]== '')
+					$('#'+i).html('<span></span>')
+				else
+					$('#'+i).html('<span>'+chessman_names[chessboard[i].slice(0,2)]+'</span>')
+			}
+			// remove here_to_ther previous maeks
+			if (htt.length>0){
+				for (let i of htt)
+					$('#'+i).css('border','1px solid black')
+			}
+			// make here_to_there current marks
+			if (data.context.htt.length>0){
+				// store here_to_there marks
+				htt = data.context.htt
+				for (let i of htt)
+					$('#'+i).css('border','2px solid yellow')
+			}
+
+			// add dead element
+			if (data.context.dead_man != undefined){
+				if(data.context.dead_man.at(0) != color){
+					$('#opp_dead_chessmans').text($('#opp_dead_chessmans').text() + chessman_names[data.context.dead_man.slice(0,2)])
+				}
+				else{
+					$('#my_dead_chessmans').text($('#my_dead_chessmans').text() + chessman_names[data.context.dead_man.slice(0,2)])
+				}
+			}
+
+			// handle king check marks
+			if (kp!=null)
+				$('#'+kp).css('border','1px solid black')
+			
+			if(data.context.check != undefined){
+				kp = data.context.kp
+				$('#'+kp).css('border','2px solid red')
+			}
+			else{
+				kp = null
+			}
+
+			// show change turns
+			$('#turn_show').text(data.context.turn == 'B'? 'black turn' : 'white turn')
+			turn = data.context.turn
+
+			// game over code
+			if (data.context.win != undefined || data.context.stalemate_win != undefined || data.context.insufficient_piece != undefined){
+				if (data.context.win != undefined)
+					$('#gameover').text(data.context.turn=='B'? "White Win The Game": "Black Win The Game")
+				else if (data.context.stalemate_win != undefined)
+					$('#gameover').text(data.context.turn=='B'? "White Win The Game": "Black Win The Game")
+				else
+					$('#gameover').text("Game has been draw cause of insufficient piece")
+
+				$('#gameover').css('display','block')
+				for (let i of Object.keys(chessboard)){
+					$('#'+i)[0].onclick = null
+				}
+				$('table').css('border','3px solid blue')
+				gameover = true
+			}
+			else{
+				if (data.context.color != data.context.turn) 
+					chatSocket.send(JSON.stringify({"type": "make_moves"}))
+			}
+		}
+	}
+
+    // on chessman box click 
+	function move(box){
+		if(turn === color && Object.keys(chessboard).includes(box.id)){
+			// if current box in particuler chessman moves whow we click previos 
+			// make moves
+			if(possible_moves.includes(box.id)){
+				chatSocket.send(JSON.stringify({
+					"type": "make_moves",
+					"from_": previous_position,
+					"to_": box.id,
+				}));	
+
+				// first remove previous morks
+				for(let i of possible_moves)
+					$('#'+i).css('border','1px solid black')
+				possible_moves = []
+				previous_position = null
+				legal_moves = {}
+			}
+			// if legal moves is not empty then no need to get new legal moves from server
+			else if (Object.keys(legal_moves).length>0){
+				// first remove previous morks
+				for(let i of possible_moves)
+					$('#'+i).css('border','1px solid black')
+				
+				if(legal_moves[chessboard[box.id]]!= undefined ){	
+					//now make new marks
+					for(let i of legal_moves[chessboard[box.id]])
+						$('#'+i).css('border','2px solid blue')
+					possible_moves = legal_moves[chessboard[box.id]]
+					previous_position = box.id
+				}
+				else{
+					possible_moves = []
+					previous_position = null
+				}
+			}
+			// if legal moves is not presnt get legal moves
+			else {
+				if(chessboard[box.id]!='' && chessboard[box.id][0]==turn){
+					previous_position = box.id
+					chatSocket.send(JSON.stringify({
+						"type": "get_moves",
+					}));
+				}
+			}
+		}
+	};
+
+</script>
+
+{% endblock %}
